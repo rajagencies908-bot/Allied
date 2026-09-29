@@ -1,370 +1,1089 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>ALLIED Sales Dashboard</title>
+  <title>Allied Sales Dashboard</title>
 
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
 
-  <!-- Excel Reader -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-<header class="topbar">
-  <div>
-    <div class="brand">ALLIED</div>
-    <div class="subtitle">Sales • Budget • Stock Dashboard</div>
-  </div>
+<!-- =========================================================
+     LOADING
+========================================================= -->
 
-  <div class="top-actions">
-    <span class="badge" id="modeBadge">Admin</span>
-    <button class="primary-btn" onclick="openOrderModal()">+ Place Order</button>
-  </div>
-</header>
+<div id="loadingScreen" class="loading-screen">
+  <div class="loader"></div>
+  <div>Loading Allied Dashboard...</div>
+</div>
 
 
-<main class="container">
+<!-- =========================================================
+     LOGIN
+========================================================= -->
 
-  <!-- ================= ADMIN DATA MANAGEMENT ================= -->
+<section id="loginScreen" class="login-screen hidden">
 
-  <section class="panel admin-only" id="dataManagement">
+  <div class="login-card">
 
-    <div class="section-title-row">
-      <div>
-        <h2>Data Management</h2>
-        <p>Upload each data file separately.</p>
-      </div>
-    </div>
-
-    <div class="upload-grid">
-
-      <div class="upload-card">
-        <h3>Party Master</h3>
-        <p>Customer, Party Group and Budget master</p>
-
-        <input
-          type="file"
-          id="partyFile"
-          accept=".xlsx,.xls,.csv"
-          hidden
-        >
-
-        <button
-          class="upload-btn"
-          onclick="document.getElementById('partyFile').click()"
-        >
-          Upload Party Master
-        </button>
-
-        <div class="upload-info" id="partyStatus">
-          No data uploaded
-        </div>
-      </div>
-
-
-      <div class="upload-card">
-        <h3>Sales Data</h3>
-        <p>Month-wise customer/product sales</p>
-
-        <input
-          type="file"
-          id="salesFile"
-          accept=".xlsx,.xls,.csv"
-          hidden
-        >
-
-        <button
-          class="upload-btn"
-          onclick="document.getElementById('salesFile').click()"
-        >
-          Upload Sales Data
-        </button>
-
-        <div class="upload-info" id="salesStatus">
-          No data uploaded
-        </div>
-      </div>
-
-
-      <div class="upload-card">
-        <h3>Stock Data</h3>
-        <p>Current item-wise stock</p>
-
-        <input
-          type="file"
-          id="stockFile"
-          accept=".xlsx,.xls,.csv"
-          hidden
-        >
-
-        <button
-          class="upload-btn"
-          onclick="document.getElementById('stockFile').click()"
-        >
-          Upload Stock Data
-        </button>
-
-        <div class="upload-info" id="stockStatus">
-          No data uploaded
-        </div>
-      </div>
-
-    </div>
-
-    <div class="rule-box">
-      <strong>Document Rule:</strong>
-      Sales Data mathi fakt Party Master ma available Document ni sales dashboard ma count thase.
-    </div>
-
-  </section>
-
-
-  <!-- ================= KPI ================= -->
-
-  <section class="kpi-grid">
-
-    <div class="kpi-card">
-      <span>Total Sales</span>
-      <strong id="totalSales">₹0</strong>
-    </div>
-
-    <div class="kpi-card">
-      <span>Total Budget</span>
-      <strong id="totalBudget">₹0</strong>
-    </div>
-
-    <div class="kpi-card">
-      <span>Achievement</span>
-      <strong id="achievement">0%</strong>
-    </div>
-
-    <div class="kpi-card">
-      <span>Customers</span>
-      <strong id="customerCount">0</strong>
-    </div>
-
-    <div class="kpi-card">
-      <span>Party Groups</span>
-      <strong id="groupCount">0</strong>
-    </div>
-
-  </section>
-
-
-  <!-- ================= FILTERS ================= -->
-
-  <section class="panel">
-
-    <h2>Sales Filters</h2>
-
-    <div class="filter-grid">
+    <div class="login-brand">
+      <div class="brand-icon">A</div>
 
       <div>
-        <label>Customer</label>
-        <select id="customerFilter">
-          <option value="">All Customers</option>
-        </select>
+        <h1>ALLIED</h1>
+        <p>Sales & Stock Dashboard</p>
       </div>
-
-      <div>
-        <label>Party Group</label>
-        <select id="groupFilter">
-          <option value="">All Groups</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Month</label>
-        <select id="monthFilter">
-          <option value="">All Months</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Product</label>
-        <select id="itemFilter">
-          <option value="">All Products</option>
-        </select>
-      </div>
-
-      <div class="filter-action">
-        <button class="secondary-btn" onclick="resetFilters()">
-          Reset Filters
-        </button>
-      </div>
-
     </div>
 
-  </section>
+    <div class="login-divider"></div>
 
+    <h2>Sign in</h2>
+    <p class="muted">
+      Enter your registered email and password.
+    </p>
 
-  <!-- ================= GROUP SUMMARY ================= -->
+    <form id="loginForm">
 
-  <section class="panel">
-
-    <h2>Party Group Summary</h2>
-
-    <div class="table-wrap">
-      <table id="groupTable">
-        <thead>
-          <tr>
-            <th>Party Group</th>
-            <th>Customers</th>
-            <th>Monthly Budget</th>
-            <th>Sales</th>
-            <th>Budget</th>
-            <th>Difference</th>
-            <th>Achievement</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-  </section>
-
-
-  <!-- ================= BUDGET ACTUAL ================= -->
-
-  <section class="panel">
-
-    <h2>Customer Budget vs Actual Sales</h2>
-
-    <div class="table-wrap">
-      <table id="budgetTable">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-  </section>
-
-
-  <!-- ================= PRODUCT SALES ================= -->
-
-  <section class="panel">
-
-    <h2>Product-wise Sales</h2>
-
-    <div class="table-wrap">
-      <table id="productTable">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-  </section>
-
-
-  <!-- ================= STOCK ================= -->
-
-  <section class="panel">
-
-    <div class="section-title-row">
-      <h2>Stock Check</h2>
-
+      <label>Email</label>
       <input
-        type="search"
-        id="stockSearch"
-        placeholder="Search item..."
+        id="loginEmail"
+        type="email"
+        autocomplete="username"
+        placeholder="Email address"
+        required
+      />
+
+      <label>Password</label>
+
+      <div class="password-box">
+        <input
+          id="loginPassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Password"
+          required
+        />
+
+        <button
+          type="button"
+          class="password-toggle"
+          id="passwordToggle"
+        >
+          Show
+        </button>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary login-button"
+        id="loginButton"
       >
-    </div>
-
-    <div class="table-wrap">
-      <table id="stockTable">
-        <thead>
-          <tr>
-            <th>Item Group</th>
-            <th>Item Code</th>
-            <th>Description</th>
-            <th>Unit</th>
-            <th>Closing Qty</th>
-            <th>Rate</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-  </section>
-
-
-  <!-- ================= RAW DATA ================= -->
-
-  <section class="panel admin-only">
-
-    <div class="tabs">
-      <button class="tab active" data-tab="salesRaw">
-        Sales Data
+        Login
       </button>
 
-      <button class="tab" data-tab="stockRaw">
-        Stock Data
+      <div id="loginMessage" class="form-message"></div>
+
+    </form>
+
+    <div class="login-footer">
+      RAJ AGENCIES
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     APP
+========================================================= -->
+
+<div id="appScreen" class="app hidden">
+
+  <!-- HEADER -->
+
+  <header class="topbar">
+
+    <div class="topbar-left">
+
+      <button
+        id="mobileMenuBtn"
+        class="mobile-menu-btn"
+      >
+        ☰
       </button>
-    </div>
 
+      <div class="top-brand">
+        <div class="brand-icon small">A</div>
 
-    <div id="salesRaw" class="tab-content active">
-      <div class="table-wrap">
-        <table id="salesDataTable"></table>
+        <div>
+          <div class="brand-title">ALLIED</div>
+          <div class="brand-subtitle">RAJ AGENCIES</div>
+        </div>
       </div>
+
     </div>
 
+    <div class="topbar-right">
 
-    <div id="stockRaw" class="tab-content">
-      <div class="table-wrap">
-        <table id="stockDataTable"></table>
+      <div class="user-box">
+        <strong id="headerUserName">User</strong>
+        <span id="headerUserRole">USER</span>
       </div>
+
+      <button
+        id="logoutBtn"
+        class="btn btn-outline"
+      >
+        Logout
+      </button>
+
     </div>
 
-  </section>
-
-</main>
+  </header>
 
 
-<!-- ================= ORDER MODAL ================= -->
+  <!-- LAYOUT -->
 
-<div class="modal" id="orderModal">
+  <div class="layout">
 
-  <div class="modal-box">
+    <!-- SIDEBAR -->
 
-    <button class="modal-close" onclick="closeOrderModal()">×</button>
+    <aside id="sidebar" class="sidebar">
 
-    <h2>Place Order</h2>
+      <button
+        class="nav-item active"
+        data-page="dashboard"
+      >
+        <span>▦</span>
+        Dashboard
+      </button>
 
-    <label>Customer</label>
-    <select id="orderCustomer"></select>
+      <button
+        class="nav-item"
+        data-page="stock"
+      >
+        <span>□</span>
+        Stock
+      </button>
 
-    <label>Item</label>
-    <select id="orderItem"></select>
+      <button
+        class="nav-item"
+        data-page="orders"
+      >
+        <span>🛒</span>
+        Sales Orders
+      </button>
 
-    <label>Quantity</label>
-    <input
-      type="number"
-      id="orderQty"
-      min="1"
-      value="1"
-    >
+      <button
+        id="navUsers"
+        class="nav-item admin-only hidden"
+        data-page="users"
+      >
+        <span>♙</span>
+        User Management
+      </button>
 
-    <label>Remark</label>
-    <textarea id="orderRemark"></textarea>
+      <button
+        id="navData"
+        class="nav-item admin-only hidden"
+        data-page="data"
+      >
+        <span>⇧</span>
+        Data Management
+      </button>
 
-    <button class="primary-btn" onclick="saveOrder()">
-      Save Order
-    </button>
+    </aside>
 
-    <div id="orderMessage"></div>
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+      <!-- ===============================================
+           DASHBOARD
+      ================================================ -->
+
+      <section id="page-dashboard" class="page active">
+
+        <div class="page-heading">
+
+          <div>
+            <h1>Sales Dashboard</h1>
+            <p>
+              Party Group performance, customer budget and
+              product-wise sales.
+            </p>
+          </div>
+
+          <button
+            id="openOrderBtn"
+            class="btn btn-primary"
+          >
+            + Place Order
+          </button>
+
+        </div>
+
+
+        <!-- FILTERS -->
+
+        <div class="card filter-card">
+
+          <div class="filter-grid">
+
+            <div>
+              <label>Month</label>
+              <select id="monthFilter"></select>
+            </div>
+
+            <div>
+              <label>Party Group</label>
+              <select id="groupFilter">
+                <option value="">All Party Groups</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Customer</label>
+              <select id="customerFilter">
+                <option value="">All Customers</option>
+              </select>
+            </div>
+
+            <div class="filter-button-box">
+              <button
+                id="resetFiltersBtn"
+                class="btn btn-outline"
+              >
+                Reset Filters
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- KPI -->
+
+        <div class="kpi-grid">
+
+          <div class="kpi-card">
+            <div class="kpi-label">Total Sales</div>
+            <div id="kpiSales" class="kpi-value">
+              ₹0
+            </div>
+          </div>
+
+          <div
+            id="kpiBudgetCard"
+            class="kpi-card target-section"
+          >
+            <div class="kpi-label">Total Budget</div>
+            <div id="kpiBudget" class="kpi-value">
+              ₹0
+            </div>
+          </div>
+
+          <div
+            id="kpiAchievementCard"
+            class="kpi-card target-section"
+          >
+            <div class="kpi-label">Achievement</div>
+            <div id="kpiAchievement" class="kpi-value">
+              0%
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Customers</div>
+            <div id="kpiCustomers" class="kpi-value">
+              0
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-label">Party Groups</div>
+            <div id="kpiGroups" class="kpi-value">
+              0
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- PARTY GROUP -->
+
+        <div
+          id="groupSummaryCard"
+          class="card target-section"
+        >
+
+          <div class="card-header">
+
+            <div>
+              <h2>Party Group Summary</h2>
+              <p>
+                Combined sales and monthly target by Party Group.
+              </p>
+            </div>
+
+            <div class="table-tools">
+
+              <input
+                id="groupSearch"
+                class="table-search"
+                placeholder="Search Party Group..."
+              />
+
+              <select id="groupPageSize">
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">All</option>
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="table-wrap">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Party Group</th>
+                  <th class="num">Budget</th>
+                  <th class="num">Sales</th>
+                  <th class="num">Difference</th>
+                  <th class="num">Achievement</th>
+                </tr>
+              </thead>
+
+              <tbody id="groupTableBody"></tbody>
+            </table>
+
+          </div>
+
+          <div
+            id="groupPagination"
+            class="pagination"
+          ></div>
+
+        </div>
+
+
+        <!-- CUSTOMER BUDGET -->
+
+        <div
+          id="budgetTableCard"
+          class="card target-section"
+        >
+
+          <div class="card-header">
+
+            <div>
+              <h2>Customer Budget vs Actual</h2>
+              <p>
+                Customer-wise monthly performance.
+              </p>
+            </div>
+
+            <div class="table-tools">
+
+              <input
+                id="budgetSearch"
+                class="table-search"
+                placeholder="Search customer / group..."
+              />
+
+              <select id="budgetPageSize">
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">All</option>
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="table-wrap">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Party Group</th>
+                  <th class="num">Budget</th>
+                  <th class="num">Sales</th>
+                  <th class="num">Difference</th>
+                </tr>
+              </thead>
+
+              <tbody id="budgetTableBody"></tbody>
+            </table>
+
+          </div>
+
+          <div
+            id="budgetPagination"
+            class="pagination"
+          ></div>
+
+        </div>
+
+
+        <!-- PRODUCT SALES -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div>
+              <h2>Product-wise Sales</h2>
+              <p>
+                Product sales for selected filters.
+              </p>
+            </div>
+
+            <input
+              id="productSearch"
+              class="table-search"
+              placeholder="Search item..."
+            />
+
+          </div>
+
+          <div class="table-wrap">
+
+            <table>
+              <thead id="productTableHead"></thead>
+              <tbody id="productTableBody"></tbody>
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===============================================
+           STOCK
+      ================================================ -->
+
+      <section id="page-stock" class="page">
+
+        <div class="page-heading">
+
+          <div>
+            <h1>Stock</h1>
+            <p>Current Allied stock availability.</p>
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div>
+              <h2>Stock List</h2>
+              <p id="stockCount">0 items</p>
+            </div>
+
+            <input
+              id="stockSearch"
+              class="table-search"
+              placeholder="Search stock..."
+            />
+
+          </div>
+
+          <div class="table-wrap">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Item Group</th>
+                  <th>Item Code</th>
+                  <th>Item Description</th>
+                  <th>Unit</th>
+                  <th class="num">Closing Qty</th>
+                  <th class="num">HO Rate</th>
+                </tr>
+              </thead>
+
+              <tbody id="stockTableBody"></tbody>
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===============================================
+           ORDERS
+      ================================================ -->
+
+      <section id="page-orders" class="page">
+
+        <div class="page-heading">
+
+          <div>
+            <h1>Sales Orders</h1>
+            <p>
+              Submitted Allied sales orders.
+            </p>
+          </div>
+
+          <button
+            id="openOrderBtn2"
+            class="btn btn-primary"
+          >
+            + Place Order
+          </button>
+
+        </div>
+
+        <div class="card">
+
+          <div class="table-wrap">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Order No.</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Party Group</th>
+                  <th>Order Taken By</th>
+                  <th>Status</th>
+                  <th class="num">Items</th>
+                </tr>
+              </thead>
+
+              <tbody id="ordersTableBody"></tbody>
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===============================================
+           USERS
+      ================================================ -->
+
+      <section id="page-users" class="page">
+
+        <div class="page-heading">
+
+          <div>
+            <h1>User Management</h1>
+            <p>
+              Create users and control dashboard access.
+            </p>
+          </div>
+
+          <button
+            id="addUserBtn"
+            class="btn btn-primary"
+          >
+            + Add User
+          </button>
+
+        </div>
+
+        <div class="card">
+
+          <div class="table-wrap">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Mobile</th>
+                  <th>Role</th>
+                  <th>Target Access</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="usersTableBody"></tbody>
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===============================================
+           DATA MANAGEMENT
+      ================================================ -->
+
+      <section id="page-data" class="page">
+
+        <div class="page-heading">
+
+          <div>
+            <h1>Data Management</h1>
+            <p>
+              Admin-only central Excel uploads.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="upload-grid">
+
+          <div class="upload-card">
+
+            <div class="upload-icon">PM</div>
+
+            <h3>Party Master</h3>
+
+            <p>
+              Upload Party Master Excel file.
+              Existing Party Master will be replaced.
+            </p>
+
+            <input
+              id="partyFile"
+              type="file"
+              accept=".xlsx,.xls"
+              hidden
+            />
+
+            <button
+              class="btn btn-primary"
+              onclick="document.getElementById('partyFile').click()"
+            >
+              Upload Party Master
+            </button>
+
+            <div
+              id="partyUploadStatus"
+              class="upload-status"
+            ></div>
+
+          </div>
+
+
+          <div class="upload-card">
+
+            <div class="upload-icon">SD</div>
+
+            <h3>Sales Data</h3>
+
+            <p>
+              Upload Sales Excel.
+              Month columns are detected automatically.
+            </p>
+
+            <input
+              id="salesFile"
+              type="file"
+              accept=".xlsx,.xls"
+              hidden
+            />
+
+            <button
+              class="btn btn-primary"
+              onclick="document.getElementById('salesFile').click()"
+            >
+              Upload Sales Data
+            </button>
+
+            <div
+              id="salesUploadStatus"
+              class="upload-status"
+            ></div>
+
+          </div>
+
+
+          <div class="upload-card">
+
+            <div class="upload-icon">ST</div>
+
+            <h3>Stock Data</h3>
+
+            <p>
+              Upload latest Stock Excel.
+              Existing Stock will be replaced.
+            </p>
+
+            <input
+              id="stockFile"
+              type="file"
+              accept=".xlsx,.xls"
+              hidden
+            />
+
+            <button
+              class="btn btn-primary"
+              onclick="document.getElementById('stockFile').click()"
+            >
+              Upload Stock Data
+            </button>
+
+            <div
+              id="stockUploadStatus"
+              class="upload-status"
+            ></div>
+
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-header">
+            <div>
+              <h2>Current Database</h2>
+              <p>Central Supabase dataset status.</p>
+            </div>
+          </div>
+
+          <div class="database-stats">
+
+            <div>
+              <span>Party Master</span>
+              <strong id="dbPartyCount">0</strong>
+            </div>
+
+            <div>
+              <span>Sales Rows</span>
+              <strong id="dbSalesCount">0</strong>
+            </div>
+
+            <div>
+              <span>Stock Items</span>
+              <strong id="dbStockCount">0</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
 
   </div>
 
 </div>
 
 
-<script src="app.js?v=3"></script>
+<!-- =========================================================
+     SALES ORDER MODAL
+========================================================= -->
+
+<div id="orderModal" class="modal hidden">
+
+  <div class="modal-backdrop"></div>
+
+  <div class="modal-dialog order-dialog">
+
+    <div class="modal-header">
+
+      <div>
+        <div class="modal-brand">ALLIED</div>
+        <h2>SALES ORDER</h2>
+        <p>RAJ AGENCIES</p>
+      </div>
+
+      <button
+        id="closeOrderModal"
+        class="modal-close"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="modal-body">
+
+      <div class="order-info-grid">
+
+        <div>
+          <label>Customer *</label>
+          <select id="orderCustomer"></select>
+        </div>
+
+        <div>
+          <label>Party Group</label>
+          <input
+            id="orderPartyGroup"
+            readonly
+          />
+        </div>
+
+        <div>
+          <label>Order Taken By</label>
+          <input
+            id="orderTakenBy"
+            readonly
+          />
+        </div>
+
+      </div>
+
+
+      <div class="order-add-section">
+
+        <h3>Add Sales Order Item</h3>
+
+        <div class="order-item-grid">
+
+          <div>
+            <label>Item Code</label>
+            <select id="orderItemCode"></select>
+          </div>
+
+          <div>
+            <label>Item Name</label>
+            <input
+              id="orderItemName"
+              readonly
+            />
+          </div>
+
+          <div>
+            <label>Qty</label>
+            <input
+              id="orderQty"
+              type="number"
+              min="1"
+              step="1"
+              value="1"
+            />
+          </div>
+
+          <div class="order-add-button">
+            <button
+              id="addOrderItemBtn"
+              class="btn btn-primary"
+            >
+              + Add Item
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="sales-order-title">
+        SALES ORDER
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+          <thead>
+            <tr>
+              <th>Sr.</th>
+              <th>Item Code</th>
+              <th>Item Name</th>
+              <th class="num">Qty</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="orderItemsBody"></tbody>
+
+        </table>
+
+      </div>
+
+
+      <div class="order-remark">
+
+        <label>Remark</label>
+
+        <textarea
+          id="orderRemark"
+          rows="3"
+          placeholder="Optional remark..."
+        ></textarea>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-footer">
+
+      <button
+        id="clearOrderBtn"
+        class="btn btn-outline"
+      >
+        Clear
+      </button>
+
+      <button
+        id="submitOrderBtn"
+        class="btn btn-primary"
+      >
+        Submit Order
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     USER MODAL
+========================================================= -->
+
+<div id="userModal" class="modal hidden">
+
+  <div class="modal-backdrop"></div>
+
+  <div class="modal-dialog user-dialog">
+
+    <div class="modal-header">
+
+      <div>
+        <h2 id="userModalTitle">Add User</h2>
+        <p>User login and access control</p>
+      </div>
+
+      <button
+        id="closeUserModal"
+        class="modal-close"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <input id="editUserId" type="hidden" />
+
+      <div class="form-grid">
+
+        <div>
+          <label>Name *</label>
+          <input id="userName" />
+        </div>
+
+        <div>
+          <label>Email *</label>
+          <input
+            id="userEmail"
+            type="email"
+          />
+        </div>
+
+        <div>
+          <label>Mobile</label>
+          <input id="userMobile" />
+        </div>
+
+        <div>
+          <label>Password</label>
+          <input
+            id="userPassword"
+            type="password"
+            placeholder="Minimum 6 characters"
+          />
+        </div>
+
+        <div>
+          <label>Role</label>
+          <select id="userRole">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Target Access</label>
+          <select id="userTargetAccess">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div id="userStatusBox">
+          <label>Status</label>
+          <select id="userStatus">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div
+        id="userFormMessage"
+        class="form-message"
+      ></div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        id="cancelUserBtn"
+        class="btn btn-outline"
+      >
+        Cancel
+      </button>
+
+      <button
+        id="saveUserBtn"
+        class="btn btn-primary"
+      >
+        Save User
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- TOAST -->
+
+<div id="toast" class="toast"></div>
+
+
+<script src="config.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
