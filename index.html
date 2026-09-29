@@ -1,9 +1,272 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ALLIED Dashboard</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="login" class="login"><div class="box"><b class="logo">ALLIED</b><h2>Sales & Stock Dashboard</h2><input id="mobile" placeholder="Mobile Number"><input id="pin" type="password" placeholder="PIN"><button type="button" onclick="document.getElementById('login').style.display='none';document.getElementById('app').classList.remove('hide');init();">Login</button><p id="err"></p><small>V1 test: 9999999999 / 1234</small></div></div>
-<div id="app" class="hide"><header><b class="logo">ALLIED</b><h2>Sales • Budget • PartyGrp • Stock</h2><button onclick="location.reload()">Logout</button></header><main>
-<div class="kpis"><div><small>Total Sales</small><b id="sales">₹0</b></div><div><small>Budget</small><b id="budget">₹0</b></div><div><small>Achievement</small><b id="ach">0%</b></div><div><small>Customers</small><b id="cust">0</b></div></div>
-<section><h3>Filters</h3><div class="filters"><select id="customer"></select><select id="group"></select><select id="month"></select><input id="item" placeholder="Item Code"></div><p>Only Sales Data rows whose <b>Document</b> exists in Party Master are counted.</p></section>
-<section><h3>Customer Budget vs Actual Sales</h3><div class="scroll"><table id="bt"></table></div></section>
-<section><h3>Product-wise Sales</h3><div class="scroll"><table id="pt"></table></div></section>
-<section><h3>Stock Check</h3><input id="sq" placeholder="Search stock"><div class="scroll"><table id="st"></table></div></section>
-</main></div><script src="config.js"></script><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALLIED Sales Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand-area">
+    <div class="allied-logo">ALLIED</div>
+
+    <div>
+      <h1>Sales & Stock Dashboard</h1>
+      <p>Sales • Budget • Comparison • Stock • Orders</p>
+    </div>
+  </div>
+
+  <div class="top-actions">
+    <span class="user-badge">Demo Mode</span>
+    <button class="white-btn" onclick="openOrder()">+ Place Order</button>
+  </div>
+</header>
+
+
+<main class="container">
+
+  <!-- KPI -->
+  <section class="kpi-grid">
+
+    <div class="kpi-card">
+      <span>Total Sales</span>
+      <strong id="totalSales">₹0</strong>
+      <small>Selected filters</small>
+    </div>
+
+    <div class="kpi-card">
+      <span>Total Budget</span>
+      <strong id="totalBudget">₹0</strong>
+      <small>PartyGrp monthly target</small>
+    </div>
+
+    <div class="kpi-card">
+      <span>Achievement</span>
+      <strong id="achievement">0%</strong>
+      <small>Sales vs Budget</small>
+    </div>
+
+    <div class="kpi-card">
+      <span>Customers</span>
+      <strong id="customerCount">0</strong>
+      <small>Party Master customers</small>
+    </div>
+
+    <div class="kpi-card">
+      <span>Party Groups</span>
+      <strong id="groupCount">0</strong>
+      <small>Active groups</small>
+    </div>
+
+  </section>
+
+
+  <!-- FILTERS -->
+  <section class="panel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Sales Filters</h2>
+        <p>Filter customer, PartyGrp, month and item</p>
+      </div>
+
+      <button onclick="resetFilters()">Reset Filters</button>
+    </div>
+
+    <div class="filter-grid">
+
+      <label>
+        Customer
+        <select id="customerFilter"></select>
+      </label>
+
+      <label>
+        Party Group
+        <select id="groupFilter"></select>
+      </label>
+
+      <label>
+        Month
+        <select id="monthFilter"></select>
+      </label>
+
+      <label>
+        Item Code
+        <input id="itemFilter" placeholder="Search item code">
+      </label>
+
+    </div>
+
+    <div class="rule-box">
+      <b>Document Rule:</b>
+      Sales Data ni row tyare j count thase jyare eno
+      <b>Document</b> Party Master file ma available hase.
+    </div>
+
+  </section>
+
+
+  <!-- GROUP SUMMARY -->
+  <section class="panel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Party Group Summary</h2>
+        <p>Combined business performance by PartyGrp</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="groupTable"></table>
+    </div>
+
+  </section>
+
+
+  <!-- BUDGET VS ACTUAL -->
+  <section class="panel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Customer Budget vs Actual Sales</h2>
+        <p>Month-wise Sales, Budget and Difference</p>
+      </div>
+    </div>
+
+    <div class="table-wrap large-table">
+      <table id="budgetTable"></table>
+    </div>
+
+  </section>
+
+
+  <!-- PRODUCT -->
+  <section class="panel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Product-wise Sales</h2>
+        <p>Item-wise monthly sales for selected customers</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="productTable"></table>
+    </div>
+
+  </section>
+
+
+  <!-- STOCK -->
+  <section class="panel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Stock Check</h2>
+        <p>Search Item Code or Description</p>
+      </div>
+
+      <input
+        id="stockSearch"
+        class="search-box"
+        placeholder="Search stock..."
+      >
+    </div>
+
+    <div class="table-wrap stock-wrap">
+      <table id="stockTable"></table>
+    </div>
+
+  </section>
+
+
+  <!-- RAW DATA TABS -->
+  <section class="panel">
+
+    <div class="tabs">
+      <button id="salesTabBtn" class="tab active" onclick="showTab('sales')">
+        Sales Data
+      </button>
+
+      <button id="stockTabBtn" class="tab" onclick="showTab('stock')">
+        Stock Data
+      </button>
+    </div>
+
+
+    <div id="salesTab">
+      <div class="table-wrap raw-wrap">
+        <table id="salesDataTable"></table>
+      </div>
+    </div>
+
+
+    <div id="stockTab" class="hidden">
+      <div class="table-wrap raw-wrap">
+        <table id="stockDataTable"></table>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- ORDER MODAL -->
+
+<div id="orderModal" class="modal hidden">
+
+  <div class="modal-card">
+
+    <button class="close-btn" onclick="closeOrder()">×</button>
+
+    <h2>Place Order</h2>
+
+    <p class="modal-note">
+      Order exact selected billing customer / Document mate save thase.
+    </p>
+
+
+    <label>
+      Billing Customer
+      <select id="orderCustomer"></select>
+    </label>
+
+
+    <label>
+      Item
+      <select id="orderItem"></select>
+    </label>
+
+
+    <label>
+      Quantity
+      <input id="orderQty" type="number" min="1" value="1">
+    </label>
+
+
+    <label>
+      Remark
+      <input id="orderRemark" placeholder="Optional remark">
+    </label>
+
+
+    <button class="save-order" onclick="saveOrder()">
+      Save Order
+    </button>
+
+    <div id="orderMessage"></div>
+
+  </div>
+
+</div>
+
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
