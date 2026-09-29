@@ -3,209 +3,320 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>ALLIED Sales Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+
+  <link rel="stylesheet" href="style.css?v=3">
+
+  <!-- Excel Reader -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
 <header class="topbar">
-  <div class="brand-area">
-    <div class="allied-logo">ALLIED</div>
-
-    <div>
-      <h1>Sales & Stock Dashboard</h1>
-      <p>Sales • Budget • Comparison • Stock • Orders</p>
-    </div>
+  <div>
+    <div class="brand">ALLIED</div>
+    <div class="subtitle">Sales • Budget • Stock Dashboard</div>
   </div>
 
   <div class="top-actions">
-    <span class="user-badge">Demo Mode</span>
-    <button class="white-btn" onclick="openOrder()">+ Place Order</button>
+    <span class="badge" id="modeBadge">Admin</span>
+    <button class="primary-btn" onclick="openOrderModal()">+ Place Order</button>
   </div>
 </header>
 
 
 <main class="container">
 
-  <!-- KPI -->
+  <!-- ================= ADMIN DATA MANAGEMENT ================= -->
+
+  <section class="panel admin-only" id="dataManagement">
+
+    <div class="section-title-row">
+      <div>
+        <h2>Data Management</h2>
+        <p>Upload each data file separately.</p>
+      </div>
+    </div>
+
+    <div class="upload-grid">
+
+      <div class="upload-card">
+        <h3>Party Master</h3>
+        <p>Customer, Party Group and Budget master</p>
+
+        <input
+          type="file"
+          id="partyFile"
+          accept=".xlsx,.xls,.csv"
+          hidden
+        >
+
+        <button
+          class="upload-btn"
+          onclick="document.getElementById('partyFile').click()"
+        >
+          Upload Party Master
+        </button>
+
+        <div class="upload-info" id="partyStatus">
+          No data uploaded
+        </div>
+      </div>
+
+
+      <div class="upload-card">
+        <h3>Sales Data</h3>
+        <p>Month-wise customer/product sales</p>
+
+        <input
+          type="file"
+          id="salesFile"
+          accept=".xlsx,.xls,.csv"
+          hidden
+        >
+
+        <button
+          class="upload-btn"
+          onclick="document.getElementById('salesFile').click()"
+        >
+          Upload Sales Data
+        </button>
+
+        <div class="upload-info" id="salesStatus">
+          No data uploaded
+        </div>
+      </div>
+
+
+      <div class="upload-card">
+        <h3>Stock Data</h3>
+        <p>Current item-wise stock</p>
+
+        <input
+          type="file"
+          id="stockFile"
+          accept=".xlsx,.xls,.csv"
+          hidden
+        >
+
+        <button
+          class="upload-btn"
+          onclick="document.getElementById('stockFile').click()"
+        >
+          Upload Stock Data
+        </button>
+
+        <div class="upload-info" id="stockStatus">
+          No data uploaded
+        </div>
+      </div>
+
+    </div>
+
+    <div class="rule-box">
+      <strong>Document Rule:</strong>
+      Sales Data mathi fakt Party Master ma available Document ni sales dashboard ma count thase.
+    </div>
+
+  </section>
+
+
+  <!-- ================= KPI ================= -->
+
   <section class="kpi-grid">
 
     <div class="kpi-card">
       <span>Total Sales</span>
       <strong id="totalSales">₹0</strong>
-      <small>Selected filters</small>
     </div>
 
     <div class="kpi-card">
       <span>Total Budget</span>
       <strong id="totalBudget">₹0</strong>
-      <small>PartyGrp monthly target</small>
     </div>
 
     <div class="kpi-card">
       <span>Achievement</span>
       <strong id="achievement">0%</strong>
-      <small>Sales vs Budget</small>
     </div>
 
     <div class="kpi-card">
       <span>Customers</span>
       <strong id="customerCount">0</strong>
-      <small>Party Master customers</small>
     </div>
 
     <div class="kpi-card">
       <span>Party Groups</span>
       <strong id="groupCount">0</strong>
-      <small>Active groups</small>
     </div>
 
   </section>
 
 
-  <!-- FILTERS -->
+  <!-- ================= FILTERS ================= -->
+
   <section class="panel">
 
-    <div class="panel-title">
-      <div>
-        <h2>Sales Filters</h2>
-        <p>Filter customer, PartyGrp, month and item</p>
-      </div>
-
-      <button onclick="resetFilters()">Reset Filters</button>
-    </div>
+    <h2>Sales Filters</h2>
 
     <div class="filter-grid">
 
-      <label>
-        Customer
-        <select id="customerFilter"></select>
-      </label>
+      <div>
+        <label>Customer</label>
+        <select id="customerFilter">
+          <option value="">All Customers</option>
+        </select>
+      </div>
 
-      <label>
-        Party Group
-        <select id="groupFilter"></select>
-      </label>
+      <div>
+        <label>Party Group</label>
+        <select id="groupFilter">
+          <option value="">All Groups</option>
+        </select>
+      </div>
 
-      <label>
-        Month
-        <select id="monthFilter"></select>
-      </label>
+      <div>
+        <label>Month</label>
+        <select id="monthFilter">
+          <option value="">All Months</option>
+        </select>
+      </div>
 
-      <label>
-        Item Code
-        <input id="itemFilter" placeholder="Search item code">
-      </label>
+      <div>
+        <label>Product</label>
+        <select id="itemFilter">
+          <option value="">All Products</option>
+        </select>
+      </div>
 
-    </div>
+      <div class="filter-action">
+        <button class="secondary-btn" onclick="resetFilters()">
+          Reset Filters
+        </button>
+      </div>
 
-    <div class="rule-box">
-      <b>Document Rule:</b>
-      Sales Data ni row tyare j count thase jyare eno
-      <b>Document</b> Party Master file ma available hase.
     </div>
 
   </section>
 
 
-  <!-- GROUP SUMMARY -->
+  <!-- ================= GROUP SUMMARY ================= -->
+
   <section class="panel">
 
-    <div class="panel-title">
-      <div>
-        <h2>Party Group Summary</h2>
-        <p>Combined business performance by PartyGrp</p>
-      </div>
-    </div>
+    <h2>Party Group Summary</h2>
 
     <div class="table-wrap">
-      <table id="groupTable"></table>
+      <table id="groupTable">
+        <thead>
+          <tr>
+            <th>Party Group</th>
+            <th>Customers</th>
+            <th>Monthly Budget</th>
+            <th>Sales</th>
+            <th>Budget</th>
+            <th>Difference</th>
+            <th>Achievement</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
   </section>
 
 
-  <!-- BUDGET VS ACTUAL -->
+  <!-- ================= BUDGET ACTUAL ================= -->
+
   <section class="panel">
 
-    <div class="panel-title">
-      <div>
-        <h2>Customer Budget vs Actual Sales</h2>
-        <p>Month-wise Sales, Budget and Difference</p>
-      </div>
-    </div>
-
-    <div class="table-wrap large-table">
-      <table id="budgetTable"></table>
-    </div>
-
-  </section>
-
-
-  <!-- PRODUCT -->
-  <section class="panel">
-
-    <div class="panel-title">
-      <div>
-        <h2>Product-wise Sales</h2>
-        <p>Item-wise monthly sales for selected customers</p>
-      </div>
-    </div>
+    <h2>Customer Budget vs Actual Sales</h2>
 
     <div class="table-wrap">
-      <table id="productTable"></table>
+      <table id="budgetTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
     </div>
 
   </section>
 
 
-  <!-- STOCK -->
+  <!-- ================= PRODUCT SALES ================= -->
+
   <section class="panel">
 
-    <div class="panel-title">
-      <div>
-        <h2>Stock Check</h2>
-        <p>Search Item Code or Description</p>
-      </div>
+    <h2>Product-wise Sales</h2>
+
+    <div class="table-wrap">
+      <table id="productTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- ================= STOCK ================= -->
+
+  <section class="panel">
+
+    <div class="section-title-row">
+      <h2>Stock Check</h2>
 
       <input
+        type="search"
         id="stockSearch"
-        class="search-box"
-        placeholder="Search stock..."
+        placeholder="Search item..."
       >
     </div>
 
-    <div class="table-wrap stock-wrap">
-      <table id="stockTable"></table>
+    <div class="table-wrap">
+      <table id="stockTable">
+        <thead>
+          <tr>
+            <th>Item Group</th>
+            <th>Item Code</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th>Closing Qty</th>
+            <th>Rate</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
   </section>
 
 
-  <!-- RAW DATA TABS -->
-  <section class="panel">
+  <!-- ================= RAW DATA ================= -->
+
+  <section class="panel admin-only">
 
     <div class="tabs">
-      <button id="salesTabBtn" class="tab active" onclick="showTab('sales')">
+      <button class="tab active" data-tab="salesRaw">
         Sales Data
       </button>
 
-      <button id="stockTabBtn" class="tab" onclick="showTab('stock')">
+      <button class="tab" data-tab="stockRaw">
         Stock Data
       </button>
     </div>
 
 
-    <div id="salesTab">
-      <div class="table-wrap raw-wrap">
+    <div id="salesRaw" class="tab-content active">
+      <div class="table-wrap">
         <table id="salesDataTable"></table>
       </div>
     </div>
 
 
-    <div id="stockTab" class="hidden">
-      <div class="table-wrap raw-wrap">
+    <div id="stockRaw" class="tab-content">
+      <div class="table-wrap">
         <table id="stockDataTable"></table>
       </div>
     </div>
@@ -215,46 +326,34 @@
 </main>
 
 
-<!-- ORDER MODAL -->
+<!-- ================= ORDER MODAL ================= -->
 
-<div id="orderModal" class="modal hidden">
+<div class="modal" id="orderModal">
 
-  <div class="modal-card">
+  <div class="modal-box">
 
-    <button class="close-btn" onclick="closeOrder()">×</button>
+    <button class="modal-close" onclick="closeOrderModal()">×</button>
 
     <h2>Place Order</h2>
 
-    <p class="modal-note">
-      Order exact selected billing customer / Document mate save thase.
-    </p>
+    <label>Customer</label>
+    <select id="orderCustomer"></select>
 
+    <label>Item</label>
+    <select id="orderItem"></select>
 
-    <label>
-      Billing Customer
-      <select id="orderCustomer"></select>
-    </label>
+    <label>Quantity</label>
+    <input
+      type="number"
+      id="orderQty"
+      min="1"
+      value="1"
+    >
 
+    <label>Remark</label>
+    <textarea id="orderRemark"></textarea>
 
-    <label>
-      Item
-      <select id="orderItem"></select>
-    </label>
-
-
-    <label>
-      Quantity
-      <input id="orderQty" type="number" min="1" value="1">
-    </label>
-
-
-    <label>
-      Remark
-      <input id="orderRemark" placeholder="Optional remark">
-    </label>
-
-
-    <button class="save-order" onclick="saveOrder()">
+    <button class="primary-btn" onclick="saveOrder()">
       Save Order
     </button>
 
@@ -265,8 +364,7 @@
 </div>
 
 
-<script src="config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 
 </body>
 </html>
