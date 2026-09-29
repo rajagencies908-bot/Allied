@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ALLIED Dashboard</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="login" class="login"><div class="box"><b class="logo">ALLIED</b><h2>Sales & Stock Dashboard</h2><input id="mobile" placeholder="Mobile Number"><input id="pin" type="password" placeholder="PIN"><button onclick="go()">Login</button><p id="err"></p><small>V1 test: 9999999999 / 1234</small></div></div>
+<div id="app" class="hide"><header><b class="logo">ALLIED</b><h2>Sales • Budget • PartyGrp • Stock</h2><button onclick="location.reload()">Logout</button></header><main>
+<div class="kpis"><div><small>Total Sales</small><b id="sales">₹0</b></div><div><small>Budget</small><b id="budget">₹0</b></div><div><small>Achievement</small><b id="ach">0%</b></div><div><small>Customers</small><b id="cust">0</b></div></div>
+<section><h3>Filters</h3><div class="filters"><select id="customer"></select><select id="group"></select><select id="month"></select><input id="item" placeholder="Item Code"></div><p>Only Sales Data rows whose <b>Document</b> exists in Party Master are counted.</p></section>
+<section><h3>Customer Budget vs Actual Sales</h3><div class="scroll"><table id="bt"></table></div></section>
+<section><h3>Product-wise Sales</h3><div class="scroll"><table id="pt"></table></div></section>
+<section><h3>Stock Check</h3><input id="sq" placeholder="Search stock"><div class="scroll"><table id="st"></table></div></section>
+</main></div><script src="config.js"></script><script src="app.js"></script></body></html>

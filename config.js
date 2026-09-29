@@ -1,0 +1,1 @@
+window.ALLIED_CONFIG={mode:"demo",apiBaseUrl:""};
