@@ -43,14 +43,34 @@
 <main>
 <section id="dashboard" class="page">
 <div class="heading"><div><h2>Sales Dashboard</h2><p>Party Group performance, customer budget and product-wise sales.</p></div><button class="primary openOrder">+ Place Order</button></div>
-<div class="card filters"><select id="monthFilter"></select><select id="groupFilter"><option value="">All Party Groups</option></select><select id="customerFilter"><option value="">All Customers</option></select><button id="resetFilters">Reset</button></div>
+<div class="card">
+<div class="filterGrid">
+  <div><label>Months</label><div id="monthMulti" class="multi"></div></div>
+  <div><label>Party Groups</label><div id="groupMulti" class="multi"></div></div>
+  <div><label>Customers</label><div id="customerMulti" class="multi"></div></div>
+  <div class="filterAction"><button id="resetFilters">Reset Filters</button></div>
+</div>
+</div>
 <div class="kpis"><div><small>Total Sales</small><strong id="kSales">₹0</strong></div><div class="targetOnly"><small>Total Budget</small><strong id="kBudget">₹0</strong></div><div class="targetOnly"><small>Achievement</small><strong id="kAch">0%</strong></div><div><small>Customers</small><strong id="kCustomers">0</strong></div><div><small>Party Groups</small><strong id="kGroups">0</strong></div></div>
-<div class="card targetOnly"><div class="cardhead"><h3>Party Group Summary</h3><div><input id="groupSearch" placeholder="Search group"><select id="groupSize"><option>25</option><option>50</option><option>100</option><option value="all">All</option></select></div></div><div class="tablewrap"><table><thead><tr><th>Party Group</th><th>Budget</th><th>Sales</th><th>Difference</th><th>Achievement</th></tr></thead><tbody id="groupBody"></tbody></table></div><div id="groupPager" class="pager"></div></div>
-<div class="card targetOnly"><div class="cardhead"><h3>Customer Budget vs Actual</h3><div><input id="budgetSearch" placeholder="Search customer/group"><select id="budgetSize"><option>25</option><option>50</option><option>100</option><option value="all">All</option></select></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Party Group</th><th>Budget</th><th>Sales</th><th>Difference</th></tr></thead><tbody id="budgetBody"></tbody></table></div><div id="budgetPager" class="pager"></div></div>
-<div class="card"><div class="cardhead"><h3>Product-wise Sales</h3><input id="productSearch" placeholder="Search item"></div><div class="tablewrap"><table><thead id="productHead"></thead><tbody id="productBody"></tbody></table></div></div>
+<div class="card" id="monthSummaryCard">
+<div class="cardhead"><div><h3>Month-wise Summary</h3><p>Dynamic summary for every available sales month.</p></div></div>
+<div id="monthSummary" class="monthCards"></div>
+</div>
+
+<div class="card targetOnly">
+<div class="cardhead"><div><h3>Party Group Summary</h3><p>Group budget counted once; all shops and valid sales are combined.</p></div>
+<div><input id="groupSearch" placeholder="Search group / customer"><select id="groupSize"><option>25</option><option>50</option><option>100</option><option value="all">All</option></select></div></div>
+<div class="tablewrap"><table><thead id="groupHead"></thead><tbody id="groupBody"></tbody></table></div><div id="groupPager" class="pager"></div>
+</div>
+
+<div class="card">
+<div class="cardhead"><div><h3>Product-wise Sales</h3><p>Selected customers only; month-wise combined product sales.</p></div><input id="productSearch" placeholder="Search item code / item name"></div>
+<div class="tablewrap"><table><thead id="productHead"></thead><tbody id="productBody"></tbody></table></div>
+</div>
 </section>
 
-<section id="stock" class="page hidden"><div class="heading"><h2>Stock</h2></div><div class="card"><div class="cardhead"><h3>Stock List</h3><input id="stockSearch" placeholder="Search stock"></div><div class="tablewrap"><table><thead><tr><th>Item Group</th><th>Item Code</th><th>Description</th><th>Unit</th><th>Closing Qty</th><th>HO Rate</th></tr></thead><tbody id="stockBody"></tbody></table></div></div></section>
+<section id="stock" class="page hidden"><div class="heading"><h2>Stock</h2></div><div class="card"><div class="cardhead"><div><h3>Stock List</h3><p>Search by part number, description or item group.</p></div><input id="stockSearch" placeholder="Search part number / description / group"></div>
+<div class="stockFilters"><div><label>Item Groups</label><div id="stockGroupMulti" class="multi"></div></div><div><label>Part Numbers</label><div id="stockItemMulti" class="multi"></div></div></div><div class="tablewrap"><table><thead><tr><th>Item Group</th><th>Item Code</th><th>Description</th><th>Unit</th><th>Closing Qty</th><th>HO Rate</th></tr></thead><tbody id="stockBody"></tbody></table></div></div></section>
 <section id="orders" class="page hidden"><div class="heading"><h2>Sales Orders</h2><button class="primary openOrder">+ Place Order</button></div><div class="card tablewrap"><table><thead><tr><th>Order No</th><th>Date</th><th>Customer</th><th>Party Group</th><th>Taken By</th><th>Status</th><th>Items</th></tr></thead><tbody id="ordersBody"></tbody></table></div></section>
 <section id="users" class="page hidden"><div class="heading"><h2>User Management</h2><button id="addUserBtn" class="primary">+ Add User</button></div><div class="card tablewrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>Role</th><th>Target Access</th><th>Status</th><th>Last Login</th><th>Action</th></tr></thead><tbody id="usersBody"></tbody></table></div></section>
 <section id="data" class="page hidden"><div class="heading"><h2>Data Management</h2></div><div class="uploads">
@@ -62,7 +82,7 @@
 
 <div id="orderModal" class="modal hidden"><div class="dialog wide"><button class="x closeOrder">×</button><h2>ALLIED — SALES ORDER</h2><p>RAJ AGENCIES</p><div class="grid3"><div><label>Customer</label><select id="orderCustomer"></select></div><div><label>Party Group</label><input id="orderGroup" readonly></div><div><label>Order Taken By</label><input id="orderBy" readonly></div></div><hr><h3>Add Sales Order Item</h3><div class="grid4"><select id="orderItem"></select><input id="orderItemName" readonly placeholder="Item Name"><input id="orderQty" type="number" min="1" value="1"><button id="addItem" class="primary">+ Add Item</button></div><h3 class="band">SALES ORDER</h3><div class="tablewrap"><table><thead><tr><th>Sr</th><th>Item Code</th><th>Item Name</th><th>Qty</th><th>Action</th></tr></thead><tbody id="orderItems"></tbody></table></div><label>Remark</label><textarea id="orderRemark"></textarea><div class="actions"><button id="clearOrder">Clear</button><button id="submitOrder" class="primary">Submit Order</button></div></div></div>
 
-<div id="userModal" class="modal hidden"><div class="dialog"><button class="x closeUser">×</button><h2 id="userModalTitle">Add User</h2><input id="editUserId" type="hidden"><div class="grid2"><div><label>Name</label><input id="uName"></div><div><label>Email</label><input id="uEmail" type="email"></div><div><label>Mobile</label><input id="uMobile"></div><div><label>Password / PIN</label><input id="uPassword" type="password"></div><div><label>Role</label><select id="uRole"><option value="user">User</option><option value="admin">Admin</option></select></div><div><label>Target Access</label><select id="uTarget"><option value="true">Yes</option><option value="false">No</option></select></div><div id="statusBox" class="hidden"><label>Status</label><select id="uStatus"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><div id="userMessage" class="msg"></div><div class="actions"><button class="closeUser">Cancel</button><button id="saveUser" class="primary">Save User</button></div></div></div>
+<div id="userModal" class="modal hidden"><div class="dialog"><button class="x closeUser">×</button><h2 id="userModalTitle">Add User</h2><input id="editUserId" type="hidden"><div class="grid2"><div><label>Name</label><input id="uName"></div><div><label>Mobile</label><input id="uMobile"></div><div><label>Password / PIN</label><input id="uPassword" type="password"></div><div><label>Role</label><select id="uRole"><option value="user">User</option><option value="admin">Admin</option></select></div><div><label>Target Access</label><select id="uTarget"><option value="true">Yes</option><option value="false">No</option></select></div><div id="statusBox" class="hidden"><label>Status</label><select id="uStatus"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><div id="userMessage" class="msg"></div><div class="actions"><button class="closeUser">Cancel</button><button id="saveUser" class="primary">Save User</button></div></div></div>
 <div id="toast"></div>
 <script src="config.js"></script><script src="app.js"></script>
 </body></html>
