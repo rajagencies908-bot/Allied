@@ -1832,69 +1832,52 @@ function nav(p) {
    Item description is NOT shown inside dropdown.
    ====================================================== */
 
+function buildOrderCustomerOptions(query = "") {
+  const box = $("orderCustomerOptions");
+  if (!box) return;
+  const q = txt(query).trim().toLowerCase();
+  const rows = S.party
+    .filter(x => {
+      const hay = [x.name, x.document, x.party_grp, x.mobile, x.city].map(txt).join(" ").toLowerCase();
+      return !q || hay.includes(q);
+    })
+    .sort((a,b) => txt(a.name || a.document).localeCompare(txt(b.name || b.document), undefined, {numeric:true}))
+    .slice(0, 300);
+
+  box.innerHTML = rows.length
+    ? rows.map(x => `<button type="button" class="search-option" data-doc="${esc(x.document)}">${esc(x.name || x.document)}</button>`).join("")
+    : '<div class="search-empty">No customer found</div>';
+
+  box.querySelectorAll(".search-option").forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      const c = S.party.find(x => txt(x.document) === txt(b.dataset.doc));
+      if (!c) return;
+      $("orderCustomer").value = c.document;
+      $("orderCustomerSearch").value = c.name || c.document;
+      $("orderGroup").value = c.party_grp || "";
+      box.classList.add("hidden");
+    };
+  });
+}
+
 function openOrder() {
-
   S.orderItems = [];
-
-
-  $("orderCustomer").innerHTML =
-    '<option value="">Select Customer</option>' +
-
-    S.party.map(
-      x => `
-
-        <option
-          value="${esc(x.document)}"
-        >
-          ${esc(
-            x.name ||
-            x.document
-          )}
-        </option>
-
-      `
-    ).join("");
-
-
-  /*
-     ONLY PART NUMBER / ITEM CODE
-     is displayed here.
-  */
+  $("orderCustomer").value = "";
+  $("orderCustomerSearch").value = "";
+  $("orderCustomerOptions").classList.add("hidden");
+  buildOrderCustomerOptions();
 
   $("orderItem").innerHTML =
     '<option value="">Select Item</option>' +
+    S.stock.map(x => `<option value="${esc(x.item_code)}">${esc(x.item_code)}</option>`).join("");
 
-    S.stock.map(
-      x => `
-
-        <option
-          value="${esc(x.item_code)}"
-        >
-          ${esc(x.item_code)}
-        </option>
-
-      `
-    ).join("");
-
-
-  $("orderBy").value =
-    S.profile.full_name ||
-    S.session.user.email;
-
-
+  $("orderBy").value = S.profile.full_name || S.session.user.email;
   $("orderGroup").value = "";
-
   $("orderItemName").value = "";
-
   $("orderRemark").value = "";
-
-
   renderItems();
-
-
-  $("orderModal")
-    .classList
-    .remove("hidden");
+  $("orderModal").classList.remove("hidden");
 }
 
 
@@ -3144,22 +3127,24 @@ function events() {
     );
 
 
-  $("orderCustomer")
-    .onchange = () => {
+  $("orderCustomerSearch").onfocus = e => {
+    buildOrderCustomerOptions(e.target.value);
+    $("orderCustomerOptions").classList.remove("hidden");
+  };
 
-      let c =
-        S.party.find(
-          x =>
-            txt(x.document) ===
-            txt(
-              $("orderCustomer").value
-            )
-        );
+  $("orderCustomerSearch").oninput = e => {
+    $("orderCustomer").value = "";
+    $("orderGroup").value = "";
+    buildOrderCustomerOptions(e.target.value);
+    $("orderCustomerOptions").classList.remove("hidden");
+  };
 
+  $("orderCustomerSearch").onclick = e => e.stopPropagation();
+  $("orderCustomerOptions").onclick = e => e.stopPropagation();
 
-      $("orderGroup").value =
-        c?.party_grp || "";
-    };
+  document.addEventListener("click", () => {
+    $("orderCustomerOptions")?.classList.add("hidden");
+  });
 
 
   /*
