@@ -2072,11 +2072,30 @@ async function submitOrder() {
 
   const savedOrder = S.orders.find(x => Number(x.id) === Number(o.id));
 
-  $("successOrderNo").textContent = savedOrder?.order_no || o.order_no || `Order #${o.id}`;
-  $("successPdfBtn").dataset.id = String(o.id);
-  $("orderSuccessModal").classList.remove("hidden");
+  const finalOrder = savedOrder || {
+    ...o,
+    sales_order_items: S.orderItems.map((x, i) => ({ id: i + 1, ...x }))
+  };
 
-  toast("Order submitted successfully.");
+  // Keep the just-created order available for immediate PDF generation.
+  if (!S.orders.some(x => Number(x.id) === Number(finalOrder.id))) {
+    S.orders.unshift(finalOrder);
+  }
+
+  // Clear the order-entry form only after the order has been saved.
+  S.orderItems = [];
+  renderItems();
+  $("orderRemark").value = "";
+
+  // IMPORTANT: after every successful order, always show the PDF choice.
+  const successModal = $("orderSuccessModal");
+  $("successOrderNo").textContent = finalOrder.order_no || `Order #${o.id}`;
+  $("successPdfBtn").dataset.id = String(o.id);
+  successModal.classList.remove("hidden");
+  successModal.style.setProperty("display", "grid", "important");
+  successModal.style.setProperty("z-index", "10000");
+
+  toast("Order submitted successfully. PDF is ready.");
 }
 
 
@@ -3337,7 +3356,12 @@ function events() {
 
 
   document.querySelectorAll(".closeOrderSuccess").forEach(b => {
-    b.onclick = () => $("orderSuccessModal").classList.add("hidden");
+    b.onclick = () => {
+      const m = $("orderSuccessModal");
+      m.classList.add("hidden");
+      m.style.removeProperty("display");
+      m.style.removeProperty("z-index");
+    };
   });
 
 
