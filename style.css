@@ -12,3 +12,13 @@
 /* Device Lock */
 .resetDevice{border:1px solid #f1c453;background:#fff8df;color:#8a5600;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:600}.resetDevice:hover{background:#fff1bd}
 .order-actions{white-space:nowrap}.order-actions button{margin-right:6px}.danger{color:#c62828;border-color:#ffcdd2;background:#fff5f5}.danger:hover{background:#ffebee}
+
+
+/* Order success / instant PDF */
+.order-success-dialog{max-width:520px;text-align:center;padding:34px 32px}
+.order-success-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e8f8ee;color:#15803d;font-size:34px;font-weight:800}
+.order-success-dialog h2{margin:0 0 8px}.order-success-dialog>p{margin:0 0 22px;color:#64748b}
+.order-success-no{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 18px;margin:0 0 22px;border:1px solid #dbe3ef;border-radius:10px;background:#f8fafc;text-align:left}
+.order-success-no span{color:#64748b}.order-success-no strong{font-size:16px;color:#0f172a;word-break:break-all}
+.order-success-actions{justify-content:center!important;margin-top:0!important}
+.order-actions{white-space:nowrap}.order-actions button{margin-right:6px}.order-actions .danger{color:#b91c1c;border-color:#fecaca;background:#fff}

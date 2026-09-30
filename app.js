@@ -2066,14 +2066,17 @@ async function submitOrder() {
     .add("hidden");
 
 
-  toast(
-    "Order submitted."
-  );
-
-
   await loadOrders();
 
   renderOrders();
+
+  const savedOrder = S.orders.find(x => Number(x.id) === Number(o.id));
+
+  $("successOrderNo").textContent = savedOrder?.order_no || o.order_no || `Order #${o.id}`;
+  $("successPdfBtn").dataset.id = String(o.id);
+  $("orderSuccessModal").classList.remove("hidden");
+
+  toast("Order submitted successfully.");
 }
 
 
@@ -3325,6 +3328,17 @@ function events() {
   $("submitOrder")
     .onclick =
       submitOrder;
+
+
+  $("successPdfBtn").onclick = () => {
+    const id = Number($("successPdfBtn").dataset.id);
+    if (id) downloadOrderPdf(id);
+  };
+
+
+  document.querySelectorAll(".closeOrderSuccess").forEach(b => {
+    b.onclick = () => $("orderSuccessModal").classList.add("hidden");
+  });
 
 
   $("uploadParty")
