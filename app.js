@@ -1703,7 +1703,7 @@ async function loadOrders() {
     await sb
       .from("sales_orders")
       .select(
-        "*,sales_order_items(id)"
+        "*,sales_order_items(id,item_code,item_name,qty)"
       )
       .order(
         "created_at",
@@ -1724,68 +1724,78 @@ function renderOrders() {
 
   $("ordersBody").innerHTML =
     S.orders.length
-
       ? S.orders.map(x => `
-
         <tr>
-
-          <td>
-            ${esc(x.order_no)}
+          <td>${esc(x.order_no)}</td>
+          <td>${new Date(x.created_at).toLocaleString("en-IN")}</td>
+          <td>${esc(x.customer_name)}</td>
+          <td>${esc(x.party_grp)}</td>
+          <td>${esc(x.order_taken_by)}</td>
+          <td>${esc(x.status)}</td>
+          <td>${x.sales_order_items?.length || 0}</td>
+          <td class="order-actions">
+            <button type="button" class="pdfOrder" data-id="${x.id}">PDF</button>
+            ${S.profile?.role === "admin" ? `<button type="button" class="deleteOrder danger" data-id="${x.id}">Delete</button>` : ""}
           </td>
-
-          <td>
-            ${new Date(
-              x.created_at
-            ).toLocaleString(
-              "en-IN"
-            )}
-          </td>
-
-          <td>
-            ${esc(
-              x.customer_name
-            )}
-          </td>
-
-          <td>
-            ${esc(
-              x.party_grp
-            )}
-          </td>
-
-          <td>
-            ${esc(
-              x.order_taken_by
-            )}
-          </td>
-
-          <td>
-            ${esc(
-              x.status
-            )}
-          </td>
-
-          <td>
-            ${
-              x.sales_order_items
-                ?.length || 0
-            }
-          </td>
-
         </tr>
-
       `).join("")
+      : `<tr><td colspan="8">No orders</td></tr>`;
 
-      : `
+  document.querySelectorAll(".pdfOrder").forEach(b => {
+    b.onclick = () => downloadOrderPdf(+b.dataset.id);
+  });
 
-        <tr>
-          <td colspan="7">
-            No orders
-          </td>
-        </tr>
-      `;
+  document.querySelectorAll(".deleteOrder").forEach(b => {
+    b.onclick = () => deleteOrder(+b.dataset.id);
+  });
 }
 
+function downloadOrderPdf(id) {
+  const o = S.orders.find(x => Number(x.id) === Number(id));
+  if (!o) return toast("Order not found.");
+  if (!window.jspdf?.jsPDF) return toast("PDF library not loaded. Refresh and try again.");
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const items = o.sales_order_items || [];
+
+  doc.setFontSize(18);
+  doc.text("ALLIED - SALES ORDER", 14, 18);
+  doc.setFontSize(11);
+  doc.text("RAJ AGENCIES", 14, 26);
+  doc.text(`Order No: ${o.order_no || "-"}`, 14, 38);
+  doc.text(`Date: ${new Date(o.created_at).toLocaleString("en-IN")}`, 14, 45);
+  doc.text(`Customer: ${o.customer_name || "-"}`, 14, 52);
+  doc.text(`Party Group: ${o.party_grp || "-"}`, 14, 59);
+  doc.text(`Order Taken By: ${o.order_taken_by || "-"}`, 14, 66);
+  doc.text(`Status: ${o.status || "-"}`, 14, 73);
+
+  doc.autoTable({
+    startY: 82,
+    head: [["Sr", "Item Code", "Item Name", "Qty"]],
+    body: items.map((x, i) => [i + 1, x.item_code || "", x.item_name || "", x.qty || 0]),
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [22, 32, 51] }
+  });
+
+  const y = (doc.lastAutoTable?.finalY || 82) + 10;
+  if (o.remark) doc.text(`Remark: ${o.remark}`, 14, y, { maxWidth: 180 });
+  doc.save(`${o.order_no || "ALLIED-ORDER"}.pdf`);
+}
+
+async function deleteOrder(id) {
+  if (S.profile?.role !== "admin") return toast("Admin access required.");
+  const o = S.orders.find(x => Number(x.id) === Number(id));
+  if (!o) return;
+  if (!confirm(`Delete order ${o.order_no || id}? This cannot be undone.`)) return;
+
+  const { error } = await sb.from("sales_orders").delete().eq("id", id);
+  if (error) return toast(error.message);
+
+  toast("Order deleted.");
+  await loadOrders();
+  renderOrders();
+}
 
 function nav(p) {
 

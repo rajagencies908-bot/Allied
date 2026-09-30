@@ -11,3 +11,4 @@
 
 /* Device Lock */
 .resetDevice{border:1px solid #f1c453;background:#fff8df;color:#8a5600;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:600}.resetDevice:hover{background:#fff1bd}
+.order-actions{white-space:nowrap}.order-actions button{margin-right:6px}.danger{color:#c62828;border-color:#ffcdd2;background:#fff5f5}.danger:hover{background:#ffebee}
