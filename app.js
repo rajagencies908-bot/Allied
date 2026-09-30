@@ -2448,6 +2448,39 @@ async function upload(type) {
 }
 
 
+function deviceToken() {
+  const key = "allied_device_token_v1";
+  let token = localStorage.getItem(key);
+  if (!token) {
+    token = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
+    localStorage.setItem(key, token);
+  }
+  return token;
+}
+
+function deviceLabel() {
+  const ua = navigator.userAgent || "Browser";
+  let browser = "Browser";
+  if (/Edg\//.test(ua)) browser = "Edge";
+  else if (/Chrome\//.test(ua)) browser = "Chrome";
+  else if (/Firefox\//.test(ua)) browser = "Firefox";
+  else if (/Safari\//.test(ua)) browser = "Safari";
+  let os = "Device";
+  if (/Windows/.test(ua)) os = "Windows";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/iPhone|iPad/.test(ua)) os = "iPhone/iPad";
+  else if (/Mac OS/.test(ua)) os = "Mac";
+  return `${browser} / ${os}`;
+}
+
+async function checkDevice() {
+  return await userApi({
+    action: "check_device",
+    device_token: deviceToken(),
+    device_label: deviceLabel()
+  });
+}
+
 async function userApi(body) {
 
   let {
@@ -2570,6 +2603,10 @@ async function loadUsers() {
             }
           </td>
 
+          <td>${u.device_lock_enabled === false ? "OFF" : "ON"}</td>
+
+          <td>${u.device_token_hash ? esc(u.device_label || "Registered") : "Available"}</td>
+
           <td>
             ${
               u.last_login
@@ -2602,6 +2639,13 @@ async function loadUsers() {
             </button>
 
             <button
+              class="resetDevice"
+              data-id="${u.id}"
+            >
+              Reset Device
+            </button>
+
+            <button
               class="delUser"
               data-id="${u.id}"
             >
@@ -2627,6 +2671,18 @@ async function loadUsers() {
                 b.dataset.id
               )
       );
+
+    document
+      .querySelectorAll(".resetDevice")
+      .forEach(b => b.onclick = async () => {
+        const u = S.users.find(x => x.id === b.dataset.id);
+        if (!confirm(`Reset device for ${u?.full_name || "this user"}? Next login will register a new device.`)) return;
+        try {
+          await userApi({action:"reset_device", user_id:b.dataset.id});
+          toast("Device reset successfully.");
+          await loadUsers();
+        } catch(e) { toast(e.message); }
+      });
 
   }
 
@@ -2667,6 +2723,9 @@ function editUser(id) {
     String(
       u.target_access
     );
+
+  $("uDeviceLock").value =
+    String(u.device_lock_enabled !== false);
 
   $("uStatus").value =
     String(
@@ -2722,6 +2781,10 @@ async function saveUser() {
 
       target_access:
         $("uTarget").value ===
+        "true",
+
+      device_lock_enabled:
+        $("uDeviceLock").value ===
         "true"
     };
 
@@ -2877,6 +2940,12 @@ function events() {
 
 
       try {
+
+        const device = await checkDevice();
+        if (!device.allowed) {
+          await sb.auth.signOut();
+          return msg($("loginMessage"), device.message || "This account is locked to another device. Ask Admin to Reset Device.");
+        }
 
         await boot(
           data.session
@@ -3287,6 +3356,9 @@ function events() {
       $("uTarget").value =
         "true";
 
+      $("uDeviceLock").value =
+        "true";
+
 
       $("statusBox")
         .classList
@@ -3360,6 +3432,9 @@ async function init() {
 
 
   try {
+
+    const device = await checkDevice();
+    if (!device.allowed) throw Error(device.message || "This account is locked to another device. Ask Admin to Reset Device.");
 
     await boot(
       session

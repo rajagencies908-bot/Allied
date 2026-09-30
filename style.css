@@ -8,3 +8,6 @@
 
 /* Searchable customer dropdown */
 .search-select{position:relative}.search-select input[type=text]{width:100%}.search-options{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:90;background:#fff;border:1px solid #d5dbe5;border-radius:8px;box-shadow:0 12px 28px #11182722;max-height:280px;overflow:auto;padding:4px}.search-option{display:block;width:100%;border:0;border-radius:6px;background:#fff;text-align:left;padding:9px 10px;font-weight:400}.search-option:hover,.search-option.active{background:#eaf1ff;color:#174fc9}.search-empty{padding:12px;color:#667085;font-size:13px;text-align:center}
+
+/* Device Lock */
+.resetDevice{border:1px solid #f1c453;background:#fff8df;color:#8a5600;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:600}.resetDevice:hover{background:#fff1bd}
